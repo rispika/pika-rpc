@@ -12,6 +12,10 @@ import java.net.URLConnection;
 
 public class HttpClient {
 
+    public String send(com.pika.common.URL url, Invocation invocation) {
+        return send(url.getHostname(), url.getPort(), invocation);
+    }
+
     public String send(String hostname, Integer port, Invocation invocation) {
         try {
             URL url = new URL("http", hostname, port, "/");

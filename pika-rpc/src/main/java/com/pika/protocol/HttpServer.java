@@ -1,5 +1,6 @@
 package com.pika.protocol;
 
+import com.pika.common.URL;
 import org.apache.catalina.Engine;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Server;
@@ -14,6 +15,9 @@ public class HttpServer {
 
     public static final int SERVER_PORT = 8080;
 
+    public void start(URL url) {
+        start(url.getHostname(), url.getPort());
+    }
     public void start(String hostname, int port) {
 
         // 启动tomcat

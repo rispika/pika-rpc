@@ -1,11 +1,17 @@
 package com.pika.proxy;
 
 import com.pika.common.Invocation;
+import com.pika.common.URL;
+import com.pika.loadbalance.LoadBalance;
 import com.pika.protocol.HttpClient;
+import com.pika.register.RemoteRegister;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * pika
@@ -23,7 +29,25 @@ public class ProxyFactory {
                                 method.getParameterTypes(),
                                 args);
                         HttpClient httpClient = new HttpClient();
-                        return httpClient.send("localhost", 8080, invocation);
+                        // 服务发现
+                        RemoteRegister remoteRegister = RemoteRegister.getInstance("192.168.6.128", 6379);
+                        remoteRegister.setAuth("123456");
+                        List<String> urls = remoteRegister.get(interfaceClass.getName());
+                        // 发送失败充实
+                        String result = null;
+                        int cnt = 3;
+                        while (cnt > 0) {
+                            try {
+                                // 负载均衡
+                                URL url = LoadBalance.random(urls);
+                                result = httpClient.send(url, invocation);
+                                break; // 跳出循环
+                            } catch (Exception e){
+                                cnt--; // cnt减1继续循环
+                                TimeUnit.SECONDS.sleep(3);
+                            }
+                        }
+                        return result;
                     }
                 });
         return (T) instance;
