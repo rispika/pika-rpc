@@ -42,6 +42,7 @@ public class RemoteRegister {
         String urlJson = JSON.toJSONString(url);
         // 存入redis注册中心
         jedis.lpush(interfaceName, urlJson);
+        jedis.expire(interfaceName, 300);
         // 存入缓存
         List<String> urls = remoteRegisterCache.get(interfaceName);
         if (urls == null) {
